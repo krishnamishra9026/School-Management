@@ -27,35 +27,35 @@ router.get(
 router.get(
     "/",
     protect,
-    // requirePermission("view", "roles"),
+    requirePermission("view", "roles"),
     getRoles
 );
 
 router.post(
     "/",
     protect,
-    // requirePermission("create", "roles"),
+    requirePermission("create", "roles"),
     createRole
 );
 
 router.get(
     "/:id",
     protect,
-    // requirePermission("view", "roles"),
+    requirePermission("view", "roles"),
     getRole
 );
 
 router.put(
     "/:id",
     protect,
-    // requirePermission("update", "roles"),
+    requirePermission("update", "roles"),
     updateRole
 );
 
 router.delete(
     "/:id",
     protect,
-    // requirePermission("delete", "roles"),
+    requirePermission("delete", "roles"),
     deleteRole
 );
 
@@ -72,14 +72,14 @@ router.delete(
 router.get(
     "/:roleId/permissions",
     protect,
-    // requirePermission("view", "roles"),
+    requirePermission("view", "roles"),
     getRolePermissions
 );
 
 router.put(
     "/:roleId/permissions",
     protect,
-    // requirePermission("update", "roles"),
+    requirePermission("update", "roles"),
     updateRolePermissions
 );
 

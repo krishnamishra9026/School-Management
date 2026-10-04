@@ -2,6 +2,11 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
+const mongoose = require("mongoose");
+const Role = require("../models/Role");
+
+
+
 const RolePermission = require("../models/RolePermission");
 
 const generateToken = (user) => {
@@ -18,57 +23,130 @@ const generateToken = (user) => {
 };
 
 // Register User
+
+
 const register = async (req, res) => {
     try {
-        const { name, email, password, role, phone } = req.body;
+        const {
+            name,
+            email,
+            password,
+            roleId,
+            phone,
+        } = req.body;
 
         // Validate required fields
-        if (!name || !email || !password) {
+        if (
+            !name ||
+            !email ||
+            !password ||
+            !roleId
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "Name, email and password are required",
+                message:
+                    "Name, email, password and role are required",
             });
         }
 
+        // Validate roleId
+        if (
+            !mongoose.Types.ObjectId.isValid(
+                roleId
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid role ID",
+            });
+        }
+
+        // Check role exists
+        const role = await Role.findById(
+            roleId
+        );
+
+        if (!role) {
+            return res.status(404).json({
+                success: false,
+                message: "Role not found",
+            });
+        }
+
+        // Check role is active
+        if (role.status !== "active") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Selected role is inactive",
+            });
+        }
+
+        // Normalize email
+        const normalizedEmail =
+            email.toLowerCase().trim();
+
         // Check existing user
-        const existingUser = await User.findOne({
-            email: email.toLowerCase(),
-        });
+        const existingUser =
+            await User.findOne({
+                email: normalizedEmail,
+            });
 
         if (existingUser) {
             return res.status(409).json({
                 success: false,
-                message: "User with this email already exists",
+                message:
+                    "User with this email already exists",
             });
         }
 
         // Hash password
-        const hashedPassword = await bcrypt.hash(password, 12);
+        const hashedPassword =
+            await bcrypt.hash(
+                password,
+                12
+            );
 
         // Create user
         const user = await User.create({
-            name,
-            email: email.toLowerCase(),
+            name: name.trim(),
+            email: normalizedEmail,
             password: hashedPassword,
-            role: role || "student",
+            roleId: role._id,
             phone,
+            status: "active",
         });
 
-        res.status(201).json({
+        // Get user with role
+        const responseUser =
+            await User.findById(user._id)
+                .select("-password")
+                .populate(
+                    "roleId",
+                    "_id name slug status"
+                );
+
+        return res.status(201).json({
             success: true,
-            message: "User registered successfully",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                phone: user.phone,
-            },
+            message:
+                "User registered successfully",
+            user: responseUser,
         });
     } catch (error) {
-        console.error("Register error:", error);
+        console.error(
+            "Register error:",
+            error
+        );
 
-        res.status(500).json({
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "User with this email already exists",
+            });
+        }
+
+        return res.status(500).json({
             success: false,
             message: "Registration failed",
         });
