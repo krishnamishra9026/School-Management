@@ -39,6 +39,9 @@ import RoleForm from "../pages/roles/RoleForm";
 import RolePermissions from "../pages/roles/RolePermissions";
 import PermissionRoute from "./PermissionRoute";
 
+import Classes from "../pages/classes/Classes";
+import Attendance from "../pages/attendance/AttendanceList";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -135,21 +138,17 @@ const AppRoutes = () => {
 
           <Route
             path="/classes"
-            element={
-              <div className="container-fluid p-4">
-                <h4>Classes</h4>
-              </div>
-            }
-          />
+            element={<PermissionRoute action="view" subject="classes" />}
+          >
+            <Route index element={<Classes />} />
+          </Route>
 
           <Route
             path="/attendance"
-            element={
-              <div className="container-fluid p-4">
-                <h4>Attendance</h4>
-              </div>
-            }
-          />
+            element={<PermissionRoute action="view" subject="attendance" />}
+          >
+            <Route index element={<Attendance />} />
+          </Route>
 
           <Route
             path="/fees"
