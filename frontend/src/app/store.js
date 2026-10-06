@@ -10,6 +10,7 @@ import { parentsApi } from "../features/parents/parentsApi";
 import { parentStudentsApi } from "../features/parentStudents/parentStudentsApi";
 import { rolesApi } from "../features/roles/rolesApi";
 import { permissionsApi } from "../features/permissions/permissionsApi";
+import { classesApi } from "../features/classes/classesApi";
 
 export const store = configureStore({
   reducer: {
@@ -22,7 +23,7 @@ export const store = configureStore({
     [parentsApi.reducerPath]: parentsApi.reducer,
     [parentStudentsApi.reducerPath]: parentStudentsApi.reducer,
     [rolesApi.reducerPath]: rolesApi.reducer,
-
+    [classesApi.reducerPath]: classesApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
   },
 
@@ -34,6 +35,7 @@ export const store = configureStore({
       .concat(usersApi.middleware)
       .concat(parentStudentsApi.middleware)
       .concat(rolesApi.middleware)
+      .concat(classesApi.middleware)
       .concat(permissionsApi.middleware)
       .concat(parentsApi.middleware),
 });
