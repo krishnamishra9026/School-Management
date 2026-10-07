@@ -39,7 +39,12 @@ import RoleForm from "../pages/roles/RoleForm";
 import RolePermissions from "../pages/roles/RolePermissions";
 import PermissionRoute from "./PermissionRoute";
 
-import Classes from "../pages/classes/Classes";
+// Teachers
+import Classes from "../pages/classes/Classes"; 
+import ClassCreate from "../pages/classes/ClassCreate";
+import ClassView from "../pages/classes/ClassView";
+import ClassEdit from "../pages/classes/ClassEdit";
+
 import Attendance from "../pages/attendance/AttendanceList";
 
 const AppRoutes = () => {
@@ -136,12 +141,13 @@ const AppRoutes = () => {
             />
           </Route>
 
-          <Route
-            path="/classes"
-            element={<PermissionRoute action="view" subject="classes" />}
-          >
-            <Route index element={<Classes />} />
-          </Route>
+          <Route path="classes" element={<Classes />} />
+
+          <Route path="classes/create" element={<ClassCreate />} />
+
+          <Route path="classes/:id" element={<ClassView />} />
+
+          <Route path="classes/:id/edit" element={<ClassEdit />} />
 
           <Route
             path="/attendance"

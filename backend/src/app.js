@@ -8,6 +8,7 @@ const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const teacherRoutes = require("./routes/teacherRoutes");
+const classesRoutes = require("./routes/classesRoutes");
 const parentRoutes = require("./routes/parentRoutes");
 const parentStudentRoutes = require("./routes/parentStudentRoutes");
 const roleRoutes = require("./routes/roleRoutes");
@@ -42,6 +43,7 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/parents", parentRoutes);
 app.use("/api/parent-students", parentStudentRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/classes", classesRoutes);
 app.use("/api/permissions", permissionRoutes);
 
 // Start server

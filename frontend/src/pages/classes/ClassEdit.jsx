@@ -6,27 +6,27 @@ import {
 } from "react-router-dom";
 
 import {
-    useGetTeacherQuery,
-    useUpdateTeacherMutation,
-} from "../../features/teachers/teachersApi";
+    useGetClassQuery,
+    useUpdateClassMutation,
+} from "../../features/classes/classesApi";
 
-import TeacherForm from "./TeacherForm";
+import ClassForm from "./ClassForm";
 
-const TeacherEdit = () => {
+const ClassEdit = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const {
         data,
-        isLoading: isLoadingTeacher,
+        isLoading: isLoadingClass,
         isError,
         error,
-    } = useGetTeacherQuery(id);
+    } = useGetClassQuery(id);
 
     const [
-        updateTeacher,
+        updateClass,
         { isLoading: isUpdating },
-    ] = useUpdateTeacherMutation();
+    ] = useUpdateClassMutation();
 
     const teacher =
         data?.teacher ||
@@ -36,18 +36,18 @@ const TeacherEdit = () => {
     const handleSubmit = async (formData) => {
         try {
             const result =
-                await updateTeacher({
+                await updateClass({
                     id,
                     ...formData,
                 }).unwrap();
 
-            const updatedTeacher =
+            const updatedClass =
                 result?.teacher ||
                 result?.data ||
                 result;
 
             navigate(
-                `/teachers/${updatedTeacher?._id || id}`
+                `/classes/${updatedClass?._id || id}`
             );
         } catch (error) {
             console.error(
@@ -62,7 +62,7 @@ const TeacherEdit = () => {
         }
     };
 
-    if (isLoadingTeacher) {
+    if (isLoadingClass) {
         return (
             <div className="card">
                 <div className="card-body text-center py-5">
@@ -72,7 +72,7 @@ const TeacherEdit = () => {
                     />
 
                     <h5 className="mt-3">
-                        Loading Teacher...
+                        Loading Class...
                     </h5>
                 </div>
             </div>
@@ -85,15 +85,15 @@ const TeacherEdit = () => {
                 <div className="card-body">
                     <div className="alert alert-danger">
                         {error?.data?.message ||
-                            "Teacher not found."}
+                            "Class not found."}
                     </div>
 
                     <Link
-                        to="/teachers"
+                        to="/classes"
                         className="btn btn-secondary"
                     >
                         <i className="mdi mdi-arrow-left me-1"></i>
-                        Back to Teachers
+                        Back to Classs
                     </Link>
                 </div>
             </div>
@@ -112,13 +112,13 @@ const TeacherEdit = () => {
                         </li>
 
                         <li className="breadcrumb-item">
-                            <Link to="/teachers">
-                                Teachers
+                            <Link to="/classes">
+                                Classs
                             </Link>
                         </li>
 
                         <li className="breadcrumb-item">
-                            <Link to={`/teachers/${id}`}>
+                            <Link to={`/classes/${id}`}>
                                 {teacher.firstName}{" "}
                                 {teacher.lastName}
                             </Link>
@@ -131,18 +131,18 @@ const TeacherEdit = () => {
                 </div>
 
                 <h4 className="page-title">
-                    Edit Teacher
+                    Edit Class
                 </h4>
             </div>
 
-            <TeacherForm
+            <ClassForm
                 teacher={teacher}
                 onSubmit={handleSubmit}
                 loading={isUpdating}
-                submitText="Update Teacher"
+                submitText="Update Class"
             />
         </>
     );
 };
 
-export default TeacherEdit;
+export default ClassEdit;

@@ -2,23 +2,23 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import {
-    useCreateTeacherMutation,
-} from "../../features/teachers/teachersApi";
+    useCreateClassMutation,
+} from "../../features/classes/classesApi";
 
-import TeacherForm from "./TeacherForm";
+import ClassForm from "./ClassForm";
 
-const TeacherCreate = () => {
+const ClassCreate = () => {
     const navigate = useNavigate();
 
     const [
-        createTeacher,
+        createClass,
         { isLoading },
-    ] = useCreateTeacherMutation();
+    ] = useCreateClassMutation();
 
     const handleSubmit = async (formData) => {
         try {
             const result =
-                await createTeacher(formData).unwrap();
+                await createClass(formData).unwrap();
 
             const teacher =
                 result?.teacher ||
@@ -26,7 +26,7 @@ const TeacherCreate = () => {
                 result;
 
             navigate(
-                `/teachers/${teacher?._id}`
+                `/classes/${teacher?._id}`
             );
         } catch (error) {
             console.error(
@@ -53,29 +53,29 @@ const TeacherCreate = () => {
                         </li>
 
                         <li className="breadcrumb-item">
-                            <Link to="/teachers">
-                                Teachers
+                            <Link to="/classes">
+                                Classs
                             </Link>
                         </li>
 
                         <li className="breadcrumb-item active">
-                            Add Teacher
+                            Add Class
                         </li>
                     </ol>
                 </div>
 
                 <h4 className="page-title">
-                    Add Teacher
+                    Add Class
                 </h4>
             </div>
 
-            <TeacherForm
+            <ClassForm
                 onSubmit={handleSubmit}
                 loading={isLoading}
-                submitText="Save Teacher"
+                submitText="Save Class"
             />
         </>
     );
 };
 
-export default TeacherCreate;
+export default ClassCreate;
