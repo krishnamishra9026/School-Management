@@ -1,95 +1,145 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+import {
+  createApi,
+  fetchBaseQuery,
+} from "@reduxjs/toolkit/query/react";
 
 export const classesApi = createApi({
   reducerPath: "classesApi",
 
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api",
+      baseUrl: "http://localhost:5000/api",
 
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth?.token;
+      prepareHeaders: (headers, { getState }) => {
+          const token =
+              getState().auth?.token ||
+              localStorage.getItem("token");
 
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
+          if (token) {
+              headers.set(
+                  "Authorization",
+                  `Bearer ${token}`
+              );
+          }
 
-      headers.set("Content-Type", "application/json");
-
-      return headers;
-    },
+          return headers;
+      },
   }),
 
-  tagTypes: ["Class"],
+  tagTypes: ["Classes"],
 
   endpoints: (builder) => ({
-    // Get all classes
-    getClasses: builder.query({
-      query: ({
-        page = 1,
-        limit = 10,
-        search = "",
-      } = {}) => ({
-        url: "/classes",
-        params: {
-          page,
-          limit,
-          search,
-        },
+      getClasses: builder.query({
+          query: (params = {}) => ({
+              url: "/classes",
+              params,
+          }),
+          providesTags: (result) => [
+              { type: "Classes", id: "LIST" },
+              ...(result?.classes || []).map((item) => ({
+                  type: "Classes",
+                  id: item._id,
+              })),
+          ],
       }),
 
-      providesTags: ["Class"],
-    }),
-
-    // Get single class
-    getClass: builder.query({
-      query: (id) => `/classes/${id}`,
-
-      providesTags: (result, error, id) => [
-        {
-          type: "Class",
-          id,
-        },
-      ],
-    }),
-
-    // Create class
-    createClass: builder.mutation({
-      query: (classe) => ({
-        url: "/classes",
-        method: "POST",
-        body: classe,
+      getClassById: builder.query({
+          query: (id) => `/classes/${id}`,
+          providesTags: (result, error, id) => [
+              { type: "Classes", id },
+          ],
       }),
 
-      invalidatesTags: ["Class"],
-    }),
-
-    // Update class
-    updateClass: builder.mutation({
-      query: ({ id, ...classData }) => ({
-        url: `/classes/${id}`,
-        method: "PUT",
-        body: classData,
+      createClass: builder.mutation({
+          query: (body) => ({
+              url: "/classes",
+              method: "POST",
+              body,
+          }),
+          invalidatesTags: [
+              { type: "Classes", id: "LIST" },
+          ],
       }),
 
-      invalidatesTags: ["Class"],
-    }),
-
-    // Delete class
-    deleteClass: builder.mutation({
-      query: (id) => ({
-        url: `/classes/${id}`,
-        method: "DELETE",
+      updateClass: builder.mutation({
+          query: ({ id, ...body }) => ({
+              url: `/classes/${id}`,
+              method: "PUT",
+              body,
+          }),
+          invalidatesTags: (result, error, { id }) => [
+              { type: "Classes", id },
+              { type: "Classes", id: "LIST" },
+          ],
       }),
 
-      invalidatesTags: ["Class"],
-    }),
+      deleteClass: builder.mutation({
+          query: (id) => ({
+              url: `/classes/${id}`,
+              method: "DELETE",
+          }),
+          invalidatesTags: [
+              { type: "Classes", id: "LIST" },
+          ],
+      }),
+
+      assignStudent: builder.mutation({
+          query: ({ id, studentId }) => ({
+              url: `/classes/${id}/students`,
+              method: "POST",
+              body: { studentId },
+          }),
+          invalidatesTags: (result, error, { id }) => [
+              { type: "Classes", id },
+              { type: "Classes", id: "LIST" },
+          ],
+      }),
+
+      removeStudent: builder.mutation({
+          query: ({ id, studentId }) => ({
+              url: `/classes/${id}/students/${studentId}`,
+              method: "DELETE",
+          }),
+          invalidatesTags: (result, error, { id }) => [
+              { type: "Classes", id },
+              { type: "Classes", id: "LIST" },
+          ],
+      }),
+
+      assignClassTeacher: builder.mutation({
+          query: ({ id, teacherId }) => ({
+              url: `/classes/${id}/class-teacher`,
+              method: "PUT",
+              body: { teacherId },
+          }),
+          invalidatesTags: (result, error, { id }) => [
+              { type: "Classes", id },
+              { type: "Classes", id: "LIST" },
+          ],
+      }),
+
+      assignSubjectTeacher: builder.mutation({
+          query: ({ id, teacherId, subject }) => ({
+              url: `/classes/${id}/subject-teachers`,
+              method: "POST",
+              body: { teacherId, subject },
+          }),
+          invalidatesTags: (result, error, { id }) => [
+              { type: "Classes", id },
+              { type: "Classes", id: "LIST" },
+          ],
+      }),
   }),
 });
 
 export const {
   useGetClassesQuery,
-  useGetClassQuery,
+  useGetClassByIdQuery,
   useCreateClassMutation,
   useUpdateClassMutation,
   useDeleteClassMutation,
+  useAssignStudentMutation,
+  useRemoveStudentMutation,
+  useAssignClassTeacherMutation,
+  useAssignSubjectTeacherMutation,
 } = classesApi;

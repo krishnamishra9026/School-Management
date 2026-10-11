@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 
+import { useGetUsersQuery } from "../../features/users/usersApi";
+
 const defaultForm = {
+    userId: "",
     admissionNumber: "",
     firstName: "",
     lastName: "",
@@ -24,9 +27,44 @@ const StudentForm = ({
 }) => {
     const [form, setForm] = useState(defaultForm);
 
+    const { data: usersData, isLoading: usersLoading } =
+        useGetUsersQuery({ page: 1, limit: 100 });
+
+    // Only users with the student role, not already linked to another student
+    const studentUsers = (usersData?.users || []).filter(
+        (user) =>
+            user.roleId?.slug === "student" &&
+            (!user.studentId ||
+                user.studentId === student?._id ||
+                user._id === form.userId)
+    );
+
+    const handleUserChange = (e) => {
+        const userId = e.target.value;
+        const user = studentUsers.find((u) => u._id === userId);
+
+        setForm((prev) => {
+            const [first = "", ...rest] = (user?.name || "").split(" ");
+
+            return {
+                ...prev,
+                userId,
+                firstName: prev.firstName || first,
+                lastName: prev.lastName || rest.join(" "),
+                email: prev.email || user?.email || "",
+                phone: prev.phone || user?.phone || "",
+            };
+        });
+    };
+
     useEffect(() => {
         if (student) {
             setForm({
+                userId:
+                    student.userId?._id ||
+                    student.userId ||
+                    "",
+
                 admissionNumber:
                     student.admissionNumber || "",
 
@@ -96,8 +134,54 @@ const StudentForm = ({
                     </h5>
                 </div>
 
+                
+
                 <div className="card-body">
                     <div className="row">
+
+                        <div className="col-md-12 mb-3">
+                            <label className="form-label">
+                                User Account
+                                <span className="text-danger">
+                                    *
+                                </span>
+                            </label>
+
+                            <select
+                                name="userId"
+                                className="form-select"
+                                value={form.userId}
+                                onChange={
+                                    handleUserChange
+                                }
+                                disabled={usersLoading}
+                                required
+                            >
+                                <option value="">
+                                    {usersLoading
+                                        ? "Loading users..."
+                                        : "Select User"}
+                                </option>
+
+                                {studentUsers.map((user) => (
+                                    <option
+                                        key={user._id}
+                                        value={user._id}
+                                    >
+                                        {user.name} ({user.email})
+                                    </option>
+                                ))}
+                            </select>
+
+                            {!usersLoading &&
+                                studentUsers.length === 0 && (
+                                    <small className="text-muted">
+                                        No available users with the
+                                        student role. Create one in
+                                        Users first.
+                                    </small>
+                                )}
+                        </div>
 
                         <div className="col-md-4 mb-3">
                             <label className="form-label">

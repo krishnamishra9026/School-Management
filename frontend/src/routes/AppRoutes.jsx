@@ -28,6 +28,8 @@ import Teachers from "../pages/teachers/Teachers";
 import TeacherCreate from "../pages/teachers/TeacherCreate";
 import TeacherView from "../pages/teachers/TeacherView";
 import TeacherEdit from "../pages/teachers/TeacherEdit";
+import TeacherPanel from "../pages/teachers/TeacherPanel";
+import MyStudents from "../pages/teachers/MyStudents";
 
 import Parents from "../pages/parents/Parents";
 import ParentCreate from "../pages/parents/ParentCreate";
@@ -37,15 +39,13 @@ import ParentEdit from "../pages/parents/ParentEdit";
 import Roles from "../pages/roles/Roles";
 import RoleForm from "../pages/roles/RoleForm";
 import RolePermissions from "../pages/roles/RolePermissions";
+
+// Classes
+import Classes from "../pages/classes/Classes";
+import ClassDetails from "../pages/classes/ClassDetails";
 import PermissionRoute from "./PermissionRoute";
 
-// Teachers
-import Classes from "../pages/classes/Classes"; 
-import ClassCreate from "../pages/classes/ClassCreate";
-import ClassView from "../pages/classes/ClassView";
-import ClassEdit from "../pages/classes/ClassEdit";
-
-import Attendance from "../pages/attendance/AttendanceList";
+import Attendance from "../pages/attendance/AttendancePage";
 
 const AppRoutes = () => {
   return (
@@ -84,6 +84,10 @@ const AppRoutes = () => {
           <Route path="students/:id" element={<StudentView />} />
 
           <Route path="students/:id/edit" element={<StudentEdit />} />
+
+          <Route path="my-panel" element={<TeacherPanel />} />
+
+          <Route path="my-students" element={<MyStudents />} />
 
           <Route path="teachers" element={<Teachers />} />
 
@@ -141,13 +145,14 @@ const AppRoutes = () => {
             />
           </Route>
 
-          <Route path="classes" element={<Classes />} />
+          <Route
+            path="/classes"
+            element={<PermissionRoute action="view" subject="classes" />}
+          >
+            <Route index element={<Classes />} />
 
-          <Route path="classes/create" element={<ClassCreate />} />
-
-          <Route path="classes/:id" element={<ClassView />} />
-
-          <Route path="classes/:id/edit" element={<ClassEdit />} />
+            <Route path=":id" element={<ClassDetails />} />
+          </Route>
 
           <Route
             path="/attendance"

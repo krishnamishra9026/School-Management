@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useAbility } from "../auth/AbilityProvider";
 
 const menuItems = [
@@ -9,6 +10,14 @@ const menuItems = [
         icon: "uil-home-alt",
         end: true,
         permission: ["view", "dashboard"],
+    },
+
+    {
+        title: "My Panel",
+        path: "/my-panel",
+        icon: "uil-presentation",
+        end: true,
+        roles: ["teacher"],
     },
 
     {
@@ -25,6 +34,15 @@ const menuItems = [
         icon: "uil-users-alt",
         end: true,
         permission: ["view", "students"],
+        excludeRoles: ["teacher"],
+    },
+
+    {
+        title: "My Students",
+        path: "/my-students",
+        icon: "uil-users-alt",
+        end: true,
+        roles: ["teacher"],
     },
 
     {
@@ -103,6 +121,10 @@ const menuItems = [
 const Sidebar = () => {
     const ability = useAbility();
 
+    const roleSlug = useSelector(
+        (state) => state.auth.user?.roleId?.slug
+    );
+
     console.log("Sidebar ability:", ability);
 
     /*
@@ -113,6 +135,21 @@ const Sidebar = () => {
 
     const visibleMenuItems = menuItems.filter(
         (item) => {
+            // Role-specific items
+            if (
+                item.roles &&
+                !item.roles.includes(roleSlug)
+            ) {
+                return false;
+            }
+
+            if (
+                item.excludeRoles &&
+                item.excludeRoles.includes(roleSlug)
+            ) {
+                return false;
+            }
+
             // No permission requirement
             if (!item.permission) {
                 return true;

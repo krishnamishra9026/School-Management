@@ -57,6 +57,13 @@ export const teachersApi = createApi({
             ],
         }),
 
+        // Logged-in teacher's classes, subjects and students
+        getMyPanel: builder.query({
+            query: () => "/teachers/me/panel",
+
+            providesTags: ["Teachers"],
+        }),
+
         createTeacher: builder.mutation({
             query: (teacher) => ({
                 url: "/teachers",
@@ -91,6 +98,7 @@ export const teachersApi = createApi({
 export const {
     useGetTeachersQuery,
     useGetTeacherQuery,
+    useGetMyPanelQuery,
     useCreateTeacherMutation,
     useUpdateTeacherMutation,
     useDeleteTeacherMutation,

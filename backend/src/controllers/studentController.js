@@ -1,5 +1,97 @@
 const mongoose = require("mongoose");
 const Student = require("../models/Student");
+const User = require("../models/User");
+const Role = require("../models/Role");
+const Teacher = require("../models/Teacher");
+const Parent = require("../models/Parent");
+const ParentStudent = require("../models/ParentStudent");
+const SchoolClass = require("../models/Class");
+
+// Matches no documents — used when a teacher/parent/student
+// user has no linked profile yet.
+const NO_MATCH = { _id: null };
+
+/**
+ * Build a filter limiting which students the user can see.
+ * - teacher: students in classes where they are class or subject teacher
+ * - parent:  students linked to them via ParentStudent
+ * - student: only their own record
+ * - anyone else (admin, super_admin, ...): all students ({})
+ */
+const getStudentScope = async (user) => {
+    const role =
+        user.roleId && user.roleId.slug
+            ? user.roleId
+            : await Role.findById(user.roleId).select("slug").lean();
+
+    const slug = role?.slug;
+
+    if (slug === "teacher") {
+        const teacher = await Teacher.findOne({ userId: user._id })
+            .select("_id")
+            .lean();
+
+        if (!teacher) return NO_MATCH;
+
+        const studentIds = await SchoolClass.distinct("students", {
+            $or: [
+                { classTeacher: teacher._id },
+                { "subjectTeachers.teacherId": teacher._id },
+            ],
+        });
+
+        return { _id: { $in: studentIds } };
+    }
+
+    if (slug === "parent") {
+        const parent = await Parent.findOne({ userId: user._id })
+            .select("_id")
+            .lean();
+
+        if (!parent) return NO_MATCH;
+
+        const studentIds = await ParentStudent.distinct("studentId", {
+            parentId: parent._id,
+            status: "active",
+        });
+
+        return { _id: { $in: studentIds } };
+    }
+
+    if (slug === "student") {
+        return { userId: user._id };
+    }
+
+    return {};
+};
+
+/**
+ * Validate that userId points to an existing user not
+ * already linked to another student. Returns an error
+ * message, or null when valid.
+ */
+const validateStudentUser = async (userId, studentId = null) => {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return "A valid user is required.";
+    }
+
+    const user = await User.findById(userId).select("_id");
+
+    if (!user) {
+        return "Selected user not found.";
+    }
+
+    const linked = await Student.findOne({
+        userId,
+        ...(studentId && { _id: { $ne: studentId } }),
+    }).select("_id");
+
+    if (linked) {
+        return "This user is already assigned to another student.";
+    }
+
+    return null;
+};
 
 /**
  * GET /api/students
@@ -40,14 +132,17 @@ const getStudents = async (req, res) => {
             ];
         }
 
+        const scope = await getStudentScope(req.user);
+        const scopedFilter = { $and: [scope, filter] };
+
         const [students, total] = await Promise.all([
-            Student.find(filter)
+            Student.find(scopedFilter)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
 
-            Student.countDocuments(filter),
+            Student.countDocuments(scopedFilter),
         ]);
 
         res.status(200).json({
@@ -83,7 +178,11 @@ const getStudent = async (req, res) => {
             });
         }
 
-        const student = await Student.findById(id).lean();
+        const scope = await getStudentScope(req.user);
+
+        const student = await Student.findOne({
+            $and: [{ _id: id }, scope],
+        }).lean();
 
         if (!student) {
             return res.status(404).json({
@@ -111,6 +210,7 @@ const getStudent = async (req, res) => {
 const createStudent = async (req, res) => {
     try {
         const {
+            userId,
             admissionNumber,
             firstName,
             lastName,
@@ -134,6 +234,14 @@ const createStudent = async (req, res) => {
             });
         }
 
+        const userError = await validateStudentUser(userId);
+
+        if (userError) {
+            return res.status(400).json({
+                message: userError,
+            });
+        }
+
         const existingStudent =
             await Student.findOne({ admissionNumber });
 
@@ -145,6 +253,7 @@ const createStudent = async (req, res) => {
         }
 
         const student = await Student.create({
+            userId,
             admissionNumber,
             firstName,
             lastName,
@@ -159,6 +268,10 @@ const createStudent = async (req, res) => {
             motherName,
             address,
             status: status || "active",
+        });
+
+        await User.findByIdAndUpdate(userId, {
+            studentId: student._id,
         });
 
         res.status(201).json({
@@ -197,6 +310,7 @@ const updateStudent = async (req, res) => {
         }
 
         const {
+            userId,
             admissionNumber,
             firstName,
             lastName,
@@ -220,6 +334,14 @@ const updateStudent = async (req, res) => {
             });
         }
 
+        const userError = await validateStudentUser(userId, id);
+
+        if (userError) {
+            return res.status(400).json({
+                message: userError,
+            });
+        }
+
         const existingStudent =
             await Student.findOne({
                 admissionNumber,
@@ -233,10 +355,13 @@ const updateStudent = async (req, res) => {
             });
         }
 
+        const previous = await Student.findById(id).select("userId");
+
         const student =
             await Student.findByIdAndUpdate(
                 id,
                 {
+                    userId,
                     admissionNumber,
                     firstName,
                     lastName,
@@ -263,6 +388,19 @@ const updateStudent = async (req, res) => {
                 message: "Student not found.",
             });
         }
+
+        if (
+            previous?.userId &&
+            String(previous.userId) !== String(userId)
+        ) {
+            await User.findByIdAndUpdate(previous.userId, {
+                studentId: null,
+            });
+        }
+
+        await User.findByIdAndUpdate(userId, {
+            studentId: student._id,
+        });
 
         res.status(200).json({
             message: "Student updated successfully.",
@@ -305,6 +443,12 @@ const deleteStudent = async (req, res) => {
         if (!student) {
             return res.status(404).json({
                 message: "Student not found.",
+            });
+        }
+
+        if (student.userId) {
+            await User.findByIdAndUpdate(student.userId, {
+                studentId: null,
             });
         }
 

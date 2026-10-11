@@ -1,6 +1,36 @@
 const mongoose = require("mongoose");
 
 const Teacher = require("../models/Teacher");
+const User = require("../models/User");
+const SchoolClass = require("../models/Class");
+
+/**
+ * Validate that userId points to an existing user not
+ * already linked to another teacher. Returns an error
+ * message, or null when valid.
+ */
+const validateTeacherUser = async (userId, teacherId = null) => {
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        return "A valid user is required.";
+    }
+
+    const user = await User.findById(userId).select("_id");
+
+    if (!user) {
+        return "Selected user not found.";
+    }
+
+    const linked = await Teacher.findOne({
+        userId,
+        ...(teacherId && { _id: { $ne: teacherId } }),
+    }).select("_id");
+
+    if (linked) {
+        return "This user is already assigned to another teacher.";
+    }
+
+    return null;
+};
 
 
 /**
@@ -168,6 +198,7 @@ const createTeacher = async (
 ) => {
     try {
         const {
+            userId,
             employeeId,
             firstName,
             lastName,
@@ -201,6 +232,14 @@ const createTeacher = async (
             });
         }
 
+        const userError = await validateTeacherUser(userId);
+
+        if (userError) {
+            return res.status(400).json({
+                message: userError,
+            });
+        }
+
         const existingTeacher =
             await Teacher.findOne({
                 employeeId,
@@ -215,6 +254,7 @@ const createTeacher = async (
 
         const teacher =
             await Teacher.create({
+                userId,
                 employeeId,
                 firstName,
                 lastName,
@@ -240,6 +280,10 @@ const createTeacher = async (
                 status:
                     status || "active",
             });
+
+        await User.findByIdAndUpdate(userId, {
+            teacherId: teacher._id,
+        });
 
         res.status(201).json({
             message:
@@ -289,6 +333,7 @@ const updateTeacher = async (
         }
 
         const {
+            userId,
             employeeId,
             firstName,
             lastName,
@@ -322,6 +367,14 @@ const updateTeacher = async (
             });
         }
 
+        const userError = await validateTeacherUser(userId, id);
+
+        if (userError) {
+            return res.status(400).json({
+                message: userError,
+            });
+        }
+
         const existingTeacher =
             await Teacher.findOne({
                 employeeId,
@@ -337,10 +390,13 @@ const updateTeacher = async (
             });
         }
 
+        const previous = await Teacher.findById(id).select("userId");
+
         const teacher =
             await Teacher.findByIdAndUpdate(
                 id,
                 {
+                    userId,
                     employeeId,
                     firstName,
                     lastName,
@@ -378,6 +434,19 @@ const updateTeacher = async (
                     "Teacher not found.",
             });
         }
+
+        if (
+            previous?.userId &&
+            String(previous.userId) !== String(userId)
+        ) {
+            await User.findByIdAndUpdate(previous.userId, {
+                teacherId: null,
+            });
+        }
+
+        await User.findByIdAndUpdate(userId, {
+            teacherId: teacher._id,
+        });
 
         res.status(200).json({
             message:
@@ -438,6 +507,12 @@ const deleteTeacher = async (
             });
         }
 
+        if (teacher.userId) {
+            await User.findByIdAndUpdate(teacher.userId, {
+                teacherId: null,
+            });
+        }
+
         res.status(200).json({
             message:
                 "Teacher deleted successfully.",
@@ -456,10 +531,120 @@ const deleteTeacher = async (
 };
 
 
+/**
+ * GET /api/teachers/me/panel
+ * Logged-in teacher's classes, subjects and students
+ */
+const getMyPanel = async (
+    req,
+    res
+) => {
+    try {
+        const teacher =
+            await Teacher.findOne({
+                userId: req.user._id,
+            }).lean();
+
+        if (!teacher) {
+            return res.status(404).json({
+                message:
+                    "No teacher profile is linked to your account.",
+            });
+        }
+
+        const classes =
+            await SchoolClass.find({
+                $or: [
+                    { classTeacher: teacher._id },
+                    {
+                        "subjectTeachers.teacherId":
+                            teacher._id,
+                    },
+                ],
+            })
+                .populate(
+                    "subjectTeachers.teacherId",
+                    "firstName lastName"
+                )
+                .populate(
+                    "students",
+                    "admissionNumber firstName lastName rollNumber gender email phone status"
+                )
+                .sort({ grade: 1, section: 1 })
+                .lean();
+
+        const teacherId = String(teacher._id);
+        const allSubjects = new Set();
+        const studentIds = new Set();
+
+        const panelClasses = classes.map((item) => {
+            const subjects = item.subjectTeachers.map(
+                (st) => ({
+                    subject: st.subject,
+                    teacherName: st.teacherId
+                        ? `${st.teacherId.firstName} ${st.teacherId.lastName || ""}`.trim()
+                        : "—",
+                    isMine:
+                        String(st.teacherId?._id) ===
+                        teacherId,
+                })
+            );
+
+            const mySubjects = subjects
+                .filter((s) => s.isMine)
+                .map((s) => s.subject);
+
+            mySubjects.forEach((s) => allSubjects.add(s));
+            item.students.forEach((s) =>
+                studentIds.add(String(s._id))
+            );
+
+            return {
+                _id: item._id,
+                name: item.name,
+                grade: item.grade,
+                section: item.section,
+                academicYear: item.academicYear,
+                room: item.room,
+                status: item.status,
+                isClassTeacher:
+                    String(item.classTeacher) === teacherId,
+                mySubjects,
+                subjects,
+                students: item.students,
+            };
+        });
+
+        res.status(200).json({
+            teacher: {
+                _id: teacher._id,
+                firstName: teacher.firstName,
+                lastName: teacher.lastName,
+                employeeId: teacher.employeeId,
+            },
+            subjects: [...allSubjects].sort(),
+            totalStudents: studentIds.size,
+            classes: panelClasses,
+        });
+    } catch (error) {
+        console.error(
+            "Teacher panel error:",
+            error
+        );
+
+        res.status(500).json({
+            message:
+                "Unable to load teacher panel.",
+        });
+    }
+};
+
+
 module.exports = {
     getTeachers,
     getTeacher,
     createTeacher,
     updateTeacher,
     deleteTeacher,
+    getMyPanel,
 };

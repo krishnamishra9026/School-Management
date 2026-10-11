@@ -1,5 +1,7 @@
 const express = require("express");
 
+const { protect } = require("../middleware/authMiddleware");
+
 const {
     getStudents,
     getStudent,
@@ -9,6 +11,9 @@ const {
 } = require("../controllers/studentController");
 
 const router = express.Router();
+
+// All routes require authentication.
+router.use(protect);
 
 router.get("/", getStudents);
 

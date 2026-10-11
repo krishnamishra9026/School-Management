@@ -11,6 +11,8 @@ import { parentStudentsApi } from "../features/parentStudents/parentStudentsApi"
 import { rolesApi } from "../features/roles/rolesApi";
 import { permissionsApi } from "../features/permissions/permissionsApi";
 import { classesApi } from "../features/classes/classesApi";
+import { dashboardApi } from "../features/dashboard/dashboardApi";
+import { attendanceApi } from "../features/attendance/attendanceApi";
 
 export const store = configureStore({
   reducer: {
@@ -25,6 +27,8 @@ export const store = configureStore({
     [rolesApi.reducerPath]: rolesApi.reducer,
     [classesApi.reducerPath]: classesApi.reducer,
     [permissionsApi.reducerPath]: permissionsApi.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [attendanceApi.reducerPath]: attendanceApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -37,5 +41,7 @@ export const store = configureStore({
       .concat(rolesApi.middleware)
       .concat(classesApi.middleware)
       .concat(permissionsApi.middleware)
-      .concat(parentsApi.middleware),
+      .concat(parentsApi.middleware)
+      .concat(dashboardApi.middleware)
+      .concat(attendanceApi.middleware),
 });
