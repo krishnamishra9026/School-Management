@@ -5,6 +5,7 @@ import {
   useGetStudentsQuery,
   useDeleteStudentMutation,
 } from "../../features/students/studentsApi";
+import Pagination from "../../components/Pagination";
 
 const Students = () => {
   /* --------------------------------
@@ -140,59 +141,6 @@ const Students = () => {
 
       alert(err?.data?.message || "Unable to delete student.");
     }
-  };
-
-  /* --------------------------------
-       Pagination Numbers
-    -------------------------------- */
-
-  const getPaginationPages = () => {
-    const pages = [];
-
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-
-      return pages;
-    }
-
-    pages.push(1);
-
-    let start = currentPage - 1;
-
-    let end = currentPage + 1;
-
-    if (currentPage <= 3) {
-      start = 2;
-      end = 4;
-    }
-
-    if (currentPage >= totalPages - 2) {
-      start = totalPages - 3;
-
-      end = totalPages - 1;
-    }
-
-    if (start > 2) {
-      pages.push("...");
-    }
-
-    for (let i = start; i <= end; i++) {
-      if (i > 1 && i < totalPages) {
-        pages.push(i);
-      }
-    }
-
-    if (end < totalPages - 1) {
-      pages.push("...");
-    }
-
-    pages.push(totalPages);
-
-    return pages;
   };
 
   /* --------------------------------
@@ -602,7 +550,7 @@ const Students = () => {
 
                               {/* Actions */}
                               <td className="text-end">
-                                <div className="btn-group">
+                                <div className="d-flex justify-content-end gap-1">
                                   {/* View */}
                                   <Link
                                     to={`/students/${student._id}`}
@@ -641,100 +589,8 @@ const Students = () => {
                     </table>
                   </div>
 
-                  {/* ============================
-                                        Pagination Footer
-                                    ============================ */}
-
-                  {students.length > 0 && (
-                    <div className="row align-items-center mt-3">
-                      {/* Showing */}
-                      <div className="col-md-6">
-                        <p className="text-muted mb-0">
-                          Showing{" "}
-                          <strong>
-                            {(currentPage - 1) * currentLimit + 1}
-                          </strong>{" "}
-                          to{" "}
-                          <strong>
-                            {Math.min(currentPage * currentLimit, total)}
-                          </strong>{" "}
-                          of <strong>{total}</strong> students
-                        </p>
-                      </div>
-
-                      {/* Pagination */}
-                      <div className="col-md-6">
-                        <nav>
-                          <ul className="pagination pagination-sm justify-content-end mb-0">
-                            {/* Previous */}
-                            <li
-                              className={`page-item ${
-                                currentPage === 1 ? "disabled" : ""
-                              }`}
-                            >
-                              <button
-                                type="button"
-                                className="page-link"
-                                onClick={() =>
-                                  handlePageChange(currentPage - 1)
-                                }
-                              >
-                                <i className="mdi mdi-chevron-left"></i>
-                              </button>
-                            </li>
-
-                            {/* Page Numbers */}
-                            {getPaginationPages().map((item, index) => {
-                              if (item === "...") {
-                                return (
-                                  <li
-                                    key={`dots-${index}`}
-                                    className="page-item disabled"
-                                  >
-                                    <span className="page-link">...</span>
-                                  </li>
-                                );
-                              }
-
-                              return (
-                                <li
-                                  key={item}
-                                  className={`page-item ${
-                                    currentPage === item ? "active" : ""
-                                  }`}
-                                >
-                                  <button
-                                    type="button"
-                                    className="page-link"
-                                    onClick={() => handlePageChange(item)}
-                                  >
-                                    {item}
-                                  </button>
-                                </li>
-                              );
-                            })}
-
-                            {/* Next */}
-                            <li
-                              className={`page-item ${
-                                currentPage >= totalPages ? "disabled" : ""
-                              }`}
-                            >
-                              <button
-                                type="button"
-                                className="page-link"
-                                onClick={() =>
-                                  handlePageChange(currentPage + 1)
-                                }
-                              >
-                                <i className="mdi mdi-chevron-right"></i>
-                              </button>
-                            </li>
-                          </ul>
-                        </nav>
-                      </div>
-                    </div>
-                  )}
+                  {/* Pagination */}
+                  <Pagination page={currentPage} totalPages={totalPages} total={total} limit={currentLimit} label="students" onChange={handlePageChange} />
                 </>
               )}
             </div>

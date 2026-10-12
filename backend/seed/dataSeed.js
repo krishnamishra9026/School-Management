@@ -72,8 +72,8 @@ const ROLE_PERMISSIONS = {
         "attendance.create",
         "attendance.update",
     ],
-    parent: ["dashboard.view", "students.view", "classes.view", "attendance.view"],
-    student: ["dashboard.view", "classes.view", "attendance.view"],
+    parent: ["dashboard.view", "students.view", "classes.view", "attendance.view", "fees.view"],
+    student: ["dashboard.view", "classes.view", "attendance.view", "fees.view"],
 };
 
 const seedEmailRegex = new RegExp(`@${SEED_EMAIL_DOMAIN.replace(".", "\\.")}$`);

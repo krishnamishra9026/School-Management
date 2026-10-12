@@ -13,6 +13,7 @@ import { permissionsApi } from "../features/permissions/permissionsApi";
 import { classesApi } from "../features/classes/classesApi";
 import { dashboardApi } from "../features/dashboard/dashboardApi";
 import { attendanceApi } from "../features/attendance/attendanceApi";
+import { feesApi } from "../features/fees/feesApi";
 
 export const store = configureStore({
   reducer: {
@@ -29,6 +30,7 @@ export const store = configureStore({
     [permissionsApi.reducerPath]: permissionsApi.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     [attendanceApi.reducerPath]: attendanceApi.reducer,
+    [feesApi.reducerPath]: feesApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
@@ -43,5 +45,6 @@ export const store = configureStore({
       .concat(permissionsApi.middleware)
       .concat(parentsApi.middleware)
       .concat(dashboardApi.middleware)
-      .concat(attendanceApi.middleware),
+      .concat(attendanceApi.middleware)
+      .concat(feesApi.middleware),
 });

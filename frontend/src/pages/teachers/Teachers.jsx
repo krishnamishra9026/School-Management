@@ -5,6 +5,7 @@ import {
     useGetTeachersQuery,
     useDeleteTeacherMutation,
 } from "../../features/teachers/teachersApi";
+import Pagination from "../../components/Pagination";
 
 const Teachers = () => {
     const [searchInput, setSearchInput] = useState("");
@@ -561,7 +562,7 @@ const Teachers = () => {
                                                         </td>
 
                                                         <td className="text-end">
-                                                            <div className="btn-group">
+                                                            <div className="d-flex justify-content-end gap-1">
 
                                                                 <Link
                                                                     to={`/teachers/${teacher._id}`}
@@ -609,124 +610,8 @@ const Teachers = () => {
 
                             </div>
 
-                            {teachers.length >
-                                0 && (
-                                <div className="row align-items-center mt-3">
-
-                                    <div className="col-md-6">
-                                        <p className="text-muted mb-0">
-                                            Showing{" "}
-                                            <strong>
-                                                {(currentPage -
-                                                    1) *
-                                                    currentLimit +
-                                                    1}
-                                            </strong>{" "}
-                                            to{" "}
-                                            <strong>
-                                                {Math.min(
-                                                    currentPage *
-                                                        currentLimit,
-                                                    total
-                                                )}
-                                            </strong>{" "}
-                                            of{" "}
-                                            <strong>
-                                                {total}
-                                            </strong>{" "}
-                                            teachers
-                                        </p>
-                                    </div>
-
-                                    <div className="col-md-6">
-                                        <nav>
-                                            <ul className="pagination pagination-sm justify-content-end mb-0">
-
-                                                <li
-                                                    className={`page-item ${
-                                                        currentPage ===
-                                                        1
-                                                            ? "disabled"
-                                                            : ""
-                                                    }`}
-                                                >
-                                                    <button
-                                                        className="page-link"
-                                                        onClick={() =>
-                                                            setPage(
-                                                                currentPage -
-                                                                    1
-                                                            )
-                                                        }
-                                                    >
-                                                        <i className="mdi mdi-chevron-left"></i>
-                                                    </button>
-                                                </li>
-
-                                                {Array.from(
-                                                    {
-                                                        length: totalPages,
-                                                    },
-                                                    (_, i) =>
-                                                        i + 1
-                                                ).map(
-                                                    (
-                                                        pageNumber
-                                                    ) => (
-                                                        <li
-                                                            key={
-                                                                pageNumber
-                                                            }
-                                                            className={`page-item ${
-                                                                currentPage ===
-                                                                pageNumber
-                                                                    ? "active"
-                                                                    : ""
-                                                            }`}
-                                                        >
-                                                            <button
-                                                                className="page-link"
-                                                                onClick={() =>
-                                                                    setPage(
-                                                                        pageNumber
-                                                                    )
-                                                                }
-                                                            >
-                                                                {
-                                                                    pageNumber
-                                                                }
-                                                            </button>
-                                                        </li>
-                                                    )
-                                                )}
-
-                                                <li
-                                                    className={`page-item ${
-                                                        currentPage >=
-                                                        totalPages
-                                                            ? "disabled"
-                                                            : ""
-                                                    }`}
-                                                >
-                                                    <button
-                                                        className="page-link"
-                                                        onClick={() =>
-                                                            setPage(
-                                                                currentPage +
-                                                                    1
-                                                            )
-                                                        }
-                                                    >
-                                                        <i className="mdi mdi-chevron-right"></i>
-                                                    </button>
-                                                </li>
-
-                                            </ul>
-                                        </nav>
-                                    </div>
-
-                                </div>
-                            )}
+                            {/* Pagination */}
+                            <Pagination page={currentPage} totalPages={totalPages} total={total} limit={currentLimit} label="teachers" onChange={setPage} />
 
                         </>
                     )}

@@ -11,6 +11,7 @@ import {
     useGetParentsQuery,
     useDeleteParentMutation,
 } from "../../features/parents/parentsApi";
+import Pagination from "../../components/Pagination";
 
 const Parents = () => {
     const navigate = useNavigate();
@@ -330,29 +331,29 @@ const Parents = () => {
                                                     <td>
                                                         <div className="d-flex gap-1">
                                                             <button
-                                                                className="btn btn-sm btn-info"
+                                                                className="btn btn-sm btn-light"
                                                                 onClick={() =>
                                                                     navigate(
                                                                         `/parents/${parent._id}`
                                                                     )
                                                                 }
                                                             >
-                                                                <i className="ri-eye-line" />
+                                                                <i className="mdi mdi-eye" />
                                                             </button>
 
                                                             <button
-                                                                className="btn btn-sm btn-warning"
+                                                                className="btn btn-sm btn-light"
                                                                 onClick={() =>
                                                                     navigate(
                                                                         `/parents/${parent._id}/edit`
                                                                     )
                                                                 }
                                                             >
-                                                                <i className="ri-edit-line" />
+                                                                <i className="mdi mdi-pencil" />
                                                             </button>
 
                                                             <button
-                                                                className="btn btn-sm btn-danger"
+                                                                className="btn btn-sm btn-light text-danger"
                                                                 disabled={
                                                                     isDeleting
                                                                 }
@@ -362,7 +363,7 @@ const Parents = () => {
                                                                     )
                                                                 }
                                                             >
-                                                                <i className="ri-delete-bin-line" />
+                                                                <i className="mdi mdi-delete" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -375,55 +376,7 @@ const Parents = () => {
                         )}
 
                     {/* Pagination */}
-                    {pagination.totalPages >
-                        1 && (
-                        <div className="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Showing page{" "}
-                                {
-                                    pagination.page
-                                }{" "}
-                                of{" "}
-                                {
-                                    pagination.totalPages
-                                }
-                            </div>
-
-                            <div className="btn-group">
-                                <button
-                                    className="btn btn-light"
-                                    disabled={
-                                        page <=
-                                        1
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            page -
-                                                1
-                                        )
-                                    }
-                                >
-                                    Previous
-                                </button>
-
-                                <button
-                                    className="btn btn-light"
-                                    disabled={
-                                        page >=
-                                        pagination.totalPages
-                                    }
-                                    onClick={() =>
-                                        setPage(
-                                            page +
-                                                1
-                                        )
-                                    }
-                                >
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <Pagination page={page} totalPages={pagination.totalPages} total={pagination.total} limit={limit} label="parents" onChange={setPage} />
                 </div>
             </div>
         </>

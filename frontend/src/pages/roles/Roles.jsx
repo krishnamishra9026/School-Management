@@ -5,6 +5,7 @@ import {
   useGetRolesQuery,
   useDeleteRoleMutation,
 } from "../../features/roles/rolesApi";
+import Pagination from "../../components/Pagination";
 
 const Roles = () => {
   const [search, setSearch] = useState("");
@@ -187,7 +188,7 @@ const Roles = () => {
                           <div className="d-flex justify-content-end gap-1">
                             <Link
                               to={`/roles/${role._id}/permissions`}
-                              className="btn btn-sm btn-info"
+                              className="btn btn-sm btn-light"
                               title="Permissions"
                             >
                               <i className="mdi mdi-eye" />
@@ -195,7 +196,7 @@ const Roles = () => {
 
                             <Link
                               to={`/roles/${role._id}/edit`}
-                              className="btn btn-sm btn-primary"
+                              className="btn btn-sm btn-light"
                               title="Edit"
                             >
                               <i className="mdi mdi-pencil" />
@@ -204,7 +205,7 @@ const Roles = () => {
                             {!role.isSystemRole && (
                               <button
                                 type="button"
-                                className="btn btn-sm btn-danger"
+                                className="btn btn-sm btn-light text-danger"
                                 title="Delete"
                                 onClick={() => handleDelete(role)}
                               >
@@ -222,32 +223,7 @@ const Roles = () => {
           )}
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <div>
-                Showing page <strong>{pagination.page}</strong> of{" "}
-                <strong>{pagination.totalPages}</strong>
-              </div>
-
-              <div className="btn-group">
-                <button
-                  className="btn btn-outline-primary"
-                  disabled={page <= 1}
-                  onClick={() => setPage((prev) => prev - 1)}
-                >
-                  Previous
-                </button>
-
-                <button
-                  className="btn btn-outline-primary"
-                  disabled={page >= pagination.totalPages}
-                  onClick={() => setPage((prev) => prev + 1)}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination page={page} totalPages={pagination.totalPages} total={pagination.total} limit={limit} label="roles" onChange={setPage} />
         </div>
       </div>
     </div>

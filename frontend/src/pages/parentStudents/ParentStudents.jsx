@@ -245,18 +245,18 @@ const ParentStudents = () => {
                                                     <td>
                                                         <div className="d-flex gap-1">
                                                             <button
-                                                                className="btn btn-sm btn-warning"
+                                                                className="btn btn-sm btn-light"
                                                                 onClick={() =>
                                                                     navigate(
                                                                         `/parent-students/${item._id}/edit`
                                                                     )
                                                                 }
                                                             >
-                                                                <i className="ri-edit-line" />
+                                                                <i className="mdi mdi-pencil" />
                                                             </button>
 
                                                             <button
-                                                                className="btn btn-sm btn-danger"
+                                                                className="btn btn-sm btn-light text-danger"
                                                                 disabled={
                                                                     isDeleting
                                                                 }
@@ -266,7 +266,7 @@ const ParentStudents = () => {
                                                                     )
                                                                 }
                                                             >
-                                                                <i className="ri-delete-bin-line" />
+                                                                <i className="mdi mdi-delete" />
                                                             </button>
                                                         </div>
                                                     </td>

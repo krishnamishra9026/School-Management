@@ -15,6 +15,7 @@ const roleRoutes = require("./routes/roleRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
+const feesRoutes = require("./routes/feesRoutes");
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use("/api/classes", classesRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/fees", feesRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;

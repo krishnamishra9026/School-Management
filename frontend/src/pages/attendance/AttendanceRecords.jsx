@@ -16,6 +16,7 @@ import {
     formatDay,
     errorMessage,
 } from "./attendanceUtils";
+import Pagination from "../../components/Pagination";
 
 /**
  * Filterable, paginated attendance records.
@@ -258,32 +259,7 @@ const AttendanceRecords = ({ studentId = "", showClassFilter = false }) => {
             )}
 
             {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                    <small className="text-muted">
-                        Page {pagination.page} of {pagination.totalPages} · {pagination.total} records
-                    </small>
-
-                    <div className="btn-group">
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-light"
-                            disabled={page <= 1}
-                            onClick={() => setPage((p) => p - 1)}
-                        >
-                            <i className="mdi mdi-chevron-left"></i> Prev
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-light"
-                            disabled={page >= pagination.totalPages}
-                            onClick={() => setPage((p) => p + 1)}
-                        >
-                            Next <i className="mdi mdi-chevron-right"></i>
-                        </button>
-                    </div>
-                </div>
-            )}
+            <Pagination page={page} totalPages={pagination?.totalPages} total={pagination?.total} limit={pagination?.limit || 20} label="records" onChange={setPage} />
         </>
     );
 };

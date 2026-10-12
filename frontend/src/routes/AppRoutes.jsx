@@ -46,6 +46,8 @@ import ClassDetails from "../pages/classes/ClassDetails";
 import PermissionRoute from "./PermissionRoute";
 
 import Attendance from "../pages/attendance/AttendancePage";
+import Fees from "../pages/fees/FeesPage";
+import FeeForm from "../pages/fees/FeeFormPage";
 
 const AppRoutes = () => {
   return (
@@ -163,12 +165,18 @@ const AppRoutes = () => {
 
           <Route
             path="/fees"
-            element={
-              <div className="container-fluid p-4">
-                <h4>Fees</h4>
-              </div>
-            }
-          />
+            element={<PermissionRoute action="view" subject="fees" />}
+          >
+            <Route index element={<Fees />} />
+
+            <Route element={<PermissionRoute action="create" subject="fees" />}>
+              <Route path="create" element={<FeeForm />} />
+            </Route>
+
+            <Route element={<PermissionRoute action="update" subject="fees" />}>
+              <Route path=":id/edit" element={<FeeForm />} />
+            </Route>
+          </Route>
 
           <Route
             path="/exams"

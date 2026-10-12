@@ -5,6 +5,7 @@ import {
   useGetUsersQuery,
   useDeleteUserMutation,
 } from "../../features/users/usersApi";
+import Pagination from "../../components/Pagination";
 
 const roleLabels = {
   super_admin: "Super Admin",
@@ -101,18 +102,6 @@ const Users = () => {
 
       alert(error?.data?.message || "Unable to delete user.");
     }
-  };
-
-  const getPageNumbers = () => {
-    const totalPages = pagination.totalPages || 1;
-
-    const pages = [];
-
-    for (let i = 1; i <= totalPages; i++) {
-      pages.push(i);
-    }
-
-    return pages;
   };
 
   return (
@@ -348,61 +337,7 @@ const Users = () => {
               </div>
 
               {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="d-flex justify-content-between align-items-center mt-3">
-                  <div className="text-muted">
-                    Showing {users.length ? (page - 1) * limit + 1 : 0} to{" "}
-                    {Math.min(page * limit, pagination.total)} of{" "}
-                    {pagination.total} users
-                  </div>
-
-                  <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${page === 1 ? "disabled" : ""}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </button>
-                    </li>
-
-                    {getPageNumbers().map((pageNumber) => (
-                      <li
-                        key={pageNumber}
-                        className={`page-item ${
-                          page === pageNumber ? "active" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => setPage(pageNumber)}
-                        >
-                          {pageNumber}
-                        </button>
-                      </li>
-                    ))}
-
-                    <li
-                      className={`page-item ${
-                        page >= pagination.totalPages ? "disabled" : ""
-                      }`}
-                    >
-                      <button
-                        className="page-link"
-                        onClick={() =>
-                          setPage((prev) =>
-                            Math.min(pagination.totalPages, prev + 1)
-                          )
-                        }
-                        disabled={page >= pagination.totalPages}
-                      >
-                        Next
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
+              <Pagination page={page} totalPages={pagination.totalPages} total={pagination.total} limit={limit} label="users" onChange={setPage} />
 
               {isFetching && !isLoading && (
                 <div className="text-center mt-2">
